@@ -288,7 +288,7 @@ export default function Home() {
                 <Sparkles className="w-7 h-7 text-[var(--primary-foreground)]" />
               </div>
               <h1 className="text-3xl font-bold tracking-tight mb-3">Generador de Ideas {brandName}</h1>
-              <p className="text-gray-500 max-w-md mb-8">
+              <p className="text-gray-700 dark:text-gray-300 max-w-md mb-8">
                 Mándame una foto, un video, un ángulo o una idea de prenda. Lo adapto al estilo{" "}
                 <strong>{brandName}</strong>, te doy el prompt para Google AI Studio y puedo{" "}
                 <strong>generar la imagen aquí mismo</strong>. También podemos chatear y aclarar dudas.
@@ -298,7 +298,7 @@ export default function Home() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="text-left text-sm px-4 py-3 rounded-xl border border-[var(--border)] hover:border-gray-400 hover:bg-[var(--card)] transition-colors text-gray-600 dark:text-gray-300"
+                    className="text-left text-sm px-4 py-3 rounded-xl border border-[var(--border)] hover:border-gray-400 hover:bg-[var(--card)] transition-colors text-[var(--foreground)]"
                   >
                     {s}
                   </button>
@@ -323,7 +323,7 @@ export default function Home() {
                       className={`group relative max-w-[85%] rounded-2xl px-4 py-3 ${
                         msg.role === "user"
                           ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                          : "bg-[var(--card)] border border-[var(--border)]"
+                          : "bg-[var(--card)] text-[var(--card-foreground)] border border-[var(--border)]"
                       }`}
                     >
                       {msg.media && msg.media.length > 0 && (
@@ -379,7 +379,7 @@ export default function Home() {
                           </button>
                           <button
                             onClick={() => copyMessage(prompt, idx)}
-                            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:border-gray-400 transition-colors"
+                            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium flex items-center gap-1.5 text-[var(--foreground)] hover:border-gray-400 transition-colors"
                           >
                             {copiedIdx === idx ? <><Check className="w-3.5 h-3.5 text-green-500" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar prompt</>}
                           </button>
@@ -435,7 +435,7 @@ export default function Home() {
                       <Sparkles className="w-4 h-4 text-[var(--primary-foreground)]" />
                     </motion.div>
                   </div>
-                  <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3 text-sm text-gray-500">
+                  <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3 text-sm text-[var(--card-foreground)]">
                     El Director Creativo de {brandName} está pensando…
                   </div>
                 </div>
