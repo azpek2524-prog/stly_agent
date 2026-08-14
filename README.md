@@ -6,8 +6,10 @@ un ángulo de cámara, una idea de prenda o simplemente una duda— y el agente:
 - **Chatea contigo** para aclarar dudas y refinar la idea.
 - **Genera la Ficha Técnica Visual** con un prompt en inglés listo para pegar en
   **Google AI Studio** (Nano Banana 2 / Gemini 3 Image).
+- **Genera la imagen aquí mismo** con un clic (botón "Generar imagen") y la descargas.
 
-Acepta texto e imágenes (varias a la vez) y mantiene el hilo de la conversación.
+Acepta **texto, imágenes y video** (arrastrando, pegando o adjuntando; varias a la vez)
+y mantiene el hilo de la conversación.
 
 ## Configuración
 
@@ -26,8 +28,9 @@ Acepta texto e imágenes (varias a la vez) y mantiene el hilo de la conversació
 
    ```env
    GEMINI_API_KEY=tu_api_key_aqui
-   # Opcional: cambia el modelo si el de por defecto no está disponible en tu cuenta
+   # Opcional: cambia los modelos si los de por defecto no están disponibles en tu cuenta
    GEMINI_MODEL=gemini-3.1-pro-preview
+   GEMINI_IMAGE_MODEL=gemini-3-pro-image-preview
    ```
 
 3. Arranca el servidor de desarrollo:
@@ -47,6 +50,8 @@ Acepta texto e imágenes (varias a la vez) y mantiene el hilo de la conversació
 
 ## Cómo funciona
 
-- `src/app/page.tsx` — interfaz de chat (texto + imágenes).
+- `src/app/page.tsx` — interfaz de chat (texto + imágenes + video, drag & drop, generar imagen).
 - `src/app/api/chat/route.ts` — endpoint que habla con Gemini y mantiene el historial.
+- `src/app/api/generate-image/route.ts` — genera la imagen a partir del prompt.
 - `src/lib/prompt-generator.ts` — el "cerebro" del agente (system prompt con la voz de Stly).
+- `src/lib/extract-prompt.ts` — extrae el prompt en inglés de la Ficha Técnica.
