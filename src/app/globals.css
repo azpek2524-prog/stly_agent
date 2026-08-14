@@ -6,7 +6,7 @@
   --color-foreground: #ededed;
 }
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 :root {
   --background: #ffffff;
