@@ -7,14 +7,14 @@ export function extractGeneratorPrompt(markdown: string): string | null {
 
   const lines = markdown.split("\n");
   const headingIdx = lines.findIndex(
-    (line) => /^#{1,6}\s/.test(line) && /prompt\s+generador/i.test(line)
+    (line) => /prompt para nano banana/i.test(line)
   );
   if (headingIdx === -1) return null;
 
-  // Recogemos todo hasta el siguiente encabezado markdown.
+  // Recogemos todo hasta el siguiente paso (ej. **4. Action Item).
   const collected: string[] = [];
   for (let i = headingIdx + 1; i < lines.length; i++) {
-    if (/^#{1,6}\s/.test(lines[i])) break;
+    if (/\*\*\d+\./.test(lines[i]) || /^#{1,6}\s/.test(lines[i])) break;
     collected.push(lines[i]);
   }
 

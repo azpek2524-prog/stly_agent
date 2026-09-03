@@ -36,10 +36,10 @@ const brandVibe = "Neo-tribal, Streetwear, Skater, Y2K, Surrealista";
 const MAX_FILE_MB = 20;
 
 const SUGGESTIONS = [
-  "Sube una referencia y adáptala al estilo Stly",
-  "Ideas para el post del próximo drop",
-  "¿Qué ángulo uso para el hoodie negro?",
-  "Genérame un prompt para AI Studio",
+  "Ayúdame a diseñar una nueva hoodie para Nano Banana 2",
+  "Ideas para el post del próximo drop en Instagram",
+  "¿Cómo puedo mejorar el marketing de esta colección?",
+  "Genérame un prompt para AI Studio (Nano Banana 2)",
 ];
 
 export default function Home() {
@@ -287,11 +287,9 @@ export default function Home() {
               <div className="w-16 h-16 mb-5 rounded-2xl bg-[var(--primary)] flex items-center justify-center">
                 <Sparkles className="w-7 h-7 text-[var(--primary-foreground)]" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight mb-3">Generador de Ideas {brandName}</h1>
+              <h1 className="text-3xl font-bold tracking-tight mb-3">Agente de Diseño y Marketing {brandName}</h1>
               <p className="text-gray-700 dark:text-gray-300 max-w-md mb-8">
-                Mándame una foto, un video, un ángulo o una idea de prenda. Lo adapto al estilo{" "}
-                <strong>{brandName}</strong>, te doy el prompt para Google AI Studio y puedo{" "}
-                <strong>generar la imagen aquí mismo</strong>. También podemos chatear y aclarar dudas.
+                Soy el Director Creativo de <strong>{brandName}</strong>. Puedo diseñar nuevos modelos de ropa, darte consejos de marketing, generar ideas de contenido y crear <strong>prompts hiper-específicos para Nano Banana 2</strong>. ¡Además, aprendo constantemente de ti y nuestra marca!
               </p>
               <div className="grid sm:grid-cols-2 gap-2 w-full max-w-lg">
                 {SUGGESTIONS.map((s) => (

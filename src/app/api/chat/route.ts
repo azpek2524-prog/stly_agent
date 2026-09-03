@@ -1,5 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { getAgentSystemPrompt } from '@/lib/prompt-generator';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 const BRAND_NAME = 'Stly';
 const BRAND_VIBE = 'Neo-tribal, Streetwear, Skater, Y2K, Surrealista';
@@ -29,8 +31,17 @@ export async function POST(req: Request) {
       return Response.json({ error: 'No hay mensajes que procesar.' }, { status: 400 });
     }
 
+    // Leer la memoria de la marca
+    let brandMemory = "";
+    try {
+      const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
+      brandMemory = await fs.readFile(memoryPath, 'utf-8');
+    } catch (e) {
+      console.warn("No se encontró o no se pudo leer BRAND_MEMORY.md, se usará memoria vacía.");
+    }
+
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const systemInstruction = getAgentSystemPrompt(BRAND_NAME, BRAND_VIBE);
+    const systemInstruction = getAgentSystemPrompt(BRAND_NAME, BRAND_VIBE, brandMemory);
 
     // Convertimos el historial de chat al formato que espera Gemini.
     const contents = messages.map((msg) => {
@@ -66,12 +77,27 @@ export async function POST(req: Request) {
       },
     });
 
-    const text = response.text;
+    let text = response.text;
     if (!text) {
       return Response.json(
         { error: 'El agente no devolvió respuesta. Revisa el nombre del modelo (GEMINI_MODEL) o vuelve a intentarlo.' },
         { status: 502 }
       );
+    }
+
+    // Comprobar si el agente quiere actualizar la memoria
+    const memoryMatch = text.match(/\[ACTUALIZAR_MEMORIA:\s*"([^"]+)"\]/);
+    if (memoryMatch) {
+      const newMemory = memoryMatch[1];
+      try {
+        const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
+        await fs.appendFile(memoryPath, `\n- ${newMemory}\n`);
+        console.log(`Memoria actualizada: ${newMemory}`);
+      } catch (e) {
+        console.error("Error al actualizar la memoria de la marca:", e);
+      }
+      // Limpiar la etiqueta de la respuesta final para el usuario
+      text = text.replace(/\[ACTUALIZAR_MEMORIA:\s*"([^"]+)"\]/, '').trim();
     }
 
     return Response.json({ result: text });
