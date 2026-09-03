@@ -13,8 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agente Stly · Generador de Ideas",
+  title: "Stly Agent",
   description: "Director creativo de IA para Stly: convierte referencias en prompts listos para Google AI Studio.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Stly Agent",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
