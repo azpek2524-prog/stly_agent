@@ -256,8 +256,9 @@ export default function Home() {
       <nav className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-md z-50 shrink-0">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[var(--primary)] rounded-md flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[var(--primary-foreground)]" />
+            <div className="w-8 h-8 bg-[var(--primary)] rounded-md flex items-center justify-center overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.jpg" alt="Stly Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-lg tracking-tight">Agente {brandName}</span>
           </div>
@@ -284,8 +285,9 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
           {isEmpty ? (
             <div className="flex flex-col items-center justify-center text-center pt-14 pb-8">
-              <div className="w-16 h-16 mb-5 rounded-2xl bg-[var(--primary)] flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-[var(--primary-foreground)]" />
+              <div className="w-16 h-16 mb-5 rounded-2xl bg-[var(--primary)] flex items-center justify-center overflow-hidden shadow-lg border border-[var(--border)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpg" alt="Stly Logo" className="w-full h-full object-cover" />
               </div>
               <h1 className="text-3xl font-bold tracking-tight mb-3">Agente de Diseño y Marketing {brandName}</h1>
               <p className="text-gray-700 dark:text-gray-300 max-w-md mb-8">
@@ -311,8 +313,9 @@ export default function Home() {
                 return (
                   <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     {msg.role === "assistant" && (
-                      <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1">
-                        <Sparkles className="w-4 h-4 text-[var(--primary-foreground)]" />
+                      <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1 overflow-hidden border border-[var(--border)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/logo.jpg" alt="Stly" className="w-full h-full object-cover" />
                       </div>
                     )}
                     <motion.div
@@ -428,9 +431,10 @@ export default function Home() {
 
               {loading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1">
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                      <Sparkles className="w-4 h-4 text-[var(--primary-foreground)]" />
+                  <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1 overflow-hidden border border-[var(--border)]">
+                    <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }} className="w-full h-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/logo.jpg" alt="Stly" className="w-full h-full object-cover" />
                     </motion.div>
                   </div>
                   <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl px-4 py-3 text-sm text-[var(--card-foreground)]">
