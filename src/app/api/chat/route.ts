@@ -1,13 +1,15 @@
 import { GoogleGenAI } from '@google/genai';
 import { getAgentSystemPrompt } from '@/lib/prompt-generator';
+import { db } from '@/lib/firebase';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const BRAND_NAME = 'Stly';
+const BRAND_NAME = 'Stly Vault';
 const BRAND_VIBE = 'Neo-tribal, Streetwear, Skater, Y2K, Surrealista';
 
 // Puedes cambiar el modelo desde el .env sin tocar el código.
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-pro-preview';
+const MEMORY_DOC_ID = 'brand_memory';
 
 type ChatImage = { data: string; mimeType: string };
 type ChatMessage = {
@@ -31,19 +33,30 @@ export async function POST(req: Request) {
       return Response.json({ error: 'No hay mensajes que procesar.' }, { status: 400 });
     }
 
-    // Leer la memoria de la marca
+    // Leer la memoria de la marca desde Firestore, fallback a local
     let brandMemory = "";
-    try {
-      const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
-      brandMemory = await fs.readFile(memoryPath, 'utf-8');
-    } catch (e) {
-      console.warn("No se encontró o no se pudo leer BRAND_MEMORY.md, se usará memoria vacía.");
+    if (db) {
+      try {
+        const docRef = db.collection('stly_vault_memory').doc(MEMORY_DOC_ID);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          brandMemory = docSnap.data()?.content || "";
+        }
+      } catch (e) {
+        console.warn("No se pudo leer la memoria desde Firebase.", e);
+      }
+    } else {
+      try {
+        const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
+        brandMemory = await fs.readFile(memoryPath, 'utf-8');
+      } catch (e) {
+        console.warn("No se encontró o no se pudo leer BRAND_MEMORY.md localmente.");
+      }
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const systemInstruction = getAgentSystemPrompt(BRAND_NAME, BRAND_VIBE, brandMemory);
 
-    // Convertimos el historial de chat al formato que espera Gemini.
     const contents = messages.map((msg) => {
       const parts: Array<Record<string, unknown>> = [];
 
@@ -57,7 +70,6 @@ export async function POST(req: Request) {
         parts.push({ text: msg.content });
       }
 
-      // Gemini no acepta partes vacías: si un turno solo trae imagen, añadimos un texto mínimo.
       if (parts.length === 0) {
         parts.push({ text: '(sin texto)' });
       }
@@ -80,7 +92,7 @@ export async function POST(req: Request) {
     let text = response.text;
     if (!text) {
       return Response.json(
-        { error: 'El agente no devolvió respuesta. Revisa el nombre del modelo (GEMINI_MODEL) o vuelve a intentarlo.' },
+        { error: 'El agente no devolvió respuesta.' },
         { status: 502 }
       );
     }
@@ -89,14 +101,31 @@ export async function POST(req: Request) {
     const memoryMatch = text.match(/\[ACTUALIZAR_MEMORIA:\s*"([^"]+)"\]/);
     if (memoryMatch) {
       const newMemory = memoryMatch[1];
+      
+      // Guardar en Firebase si está disponible
+      if (db) {
+        try {
+          const docRef = db.collection('stly_vault_memory').doc(MEMORY_DOC_ID);
+          const docSnap = await docRef.get();
+          let currentContent = docSnap.exists ? docSnap.data()?.content : "";
+          const updatedContent = currentContent + \`\\n- \${newMemory}\`;
+          
+          await docRef.set({ content: updatedContent }, { merge: true });
+          console.log(\`Memoria actualizada en Firebase: \${newMemory}\`);
+        } catch (e) {
+          console.error("Error al actualizar la memoria en Firebase:", e);
+        }
+      } 
+      
+      // Siempre guardar en local (para el entorno de desarrollo)
       try {
         const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
-        await fs.appendFile(memoryPath, `\n- ${newMemory}\n`);
-        console.log(`Memoria actualizada: ${newMemory}`);
+        await fs.appendFile(memoryPath, \`\\n- \${newMemory}\\n\`);
       } catch (e) {
-        console.error("Error al actualizar la memoria de la marca:", e);
+        console.error("Error al actualizar BRAND_MEMORY.md:", e);
       }
-      // Limpiar la etiqueta de la respuesta final para el usuario
+      
+      // Limpiar la etiqueta
       text = text.replace(/\[ACTUALIZAR_MEMORIA:\s*"([^"]+)"\]/, '').trim();
     }
 

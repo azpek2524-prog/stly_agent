@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Sparkles,
   Settings2,
   Copy,
   Check,
@@ -10,14 +9,11 @@ import {
   Send,
   X,
   User,
-  Wand2,
-  Download,
   Plus,
   Film,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { extractGeneratorPrompt } from "@/lib/extract-prompt";
 
 type Media = {
   data: string;
@@ -31,15 +27,15 @@ type Message = {
   media?: Media[];
 };
 
-const brandName = "Stly";
+const brandName = "Stly Vault";
 const brandVibe = "Neo-tribal, Streetwear, Skater, Y2K, Surrealista";
 const MAX_FILE_MB = 20;
 
 const SUGGESTIONS = [
-  "Ayúdame a diseñar una nueva hoodie para Nano Banana 2",
-  "Ideas para el post del próximo drop en Instagram",
-  "¿Cómo puedo mejorar el marketing de esta colección?",
-  "Genérame un prompt para AI Studio (Nano Banana 2)",
+  "Ayúdame a diseñar una nueva playera para el próximo drop",
+  "Ideas para un reel documental sobre la nueva colección",
+  "¿Cómo puedo mejorar la identidad visual de la marca?",
+  "Analiza esta referencia y dime cómo adaptarla a nuestro estilo",
 ];
 
 export default function Home() {
@@ -51,11 +47,6 @@ export default function Home() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // Estado de imágenes generadas por mensaje del asistente.
-  const [generated, setGenerated] = useState<Record<number, string[]>>({});
-  const [genLoading, setGenLoading] = useState<Record<number, boolean>>({});
-  const [genError, setGenError] = useState<Record<number, string>>({});
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -63,7 +54,7 @@ export default function Home() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading, generated]);
+  }, [messages, loading]);
 
   // Textarea que crece con el contenido.
   useEffect(() => {
@@ -95,7 +86,7 @@ export default function Home() {
 
     const tooBig = media.find((f) => f.size > MAX_FILE_MB * 1024 * 1024);
     if (tooBig) {
-      setError(`"${tooBig.name}" pesa demasiado. Máximo ${MAX_FILE_MB} MB por archivo.`);
+      setError(\`"\${tooBig.name}" pesa demasiado. Máximo \${MAX_FILE_MB} MB por archivo.\`);
       return;
     }
     setError(null);
@@ -176,32 +167,6 @@ export default function Home() {
     }
   };
 
-  const generateImage = async (idx: number, prompt: string) => {
-    setGenLoading((p) => ({ ...p, [idx]: true }));
-    setGenError((p) => ({ ...p, [idx]: "" }));
-    try {
-      const res = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo generar la imagen");
-      setGenerated((p) => ({ ...p, [idx]: [...(p[idx] ?? []), ...data.images] }));
-    } catch (err) {
-      setGenError((p) => ({ ...p, [idx]: err instanceof Error ? err.message : "Error generando la imagen" }));
-    } finally {
-      setGenLoading((p) => ({ ...p, [idx]: false }));
-    }
-  };
-
-  const downloadImage = (dataUrl: string, name: string) => {
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = name;
-    a.click();
-  };
-
   const copyMessage = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIdx(idx);
@@ -210,8 +175,6 @@ export default function Home() {
 
   const newChat = () => {
     setMessages([]);
-    setGenerated({});
-    setGenError({});
     setError(null);
     setPending([]);
     setInput("");
@@ -289,9 +252,9 @@ export default function Home() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.jpg" alt="Stly Logo" className="w-full h-full object-cover" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight mb-3">Agente de Diseño y Marketing {brandName}</h1>
+              <h1 className="text-3xl font-bold tracking-tight mb-3">Director Creativo de {brandName}</h1>
               <p className="text-gray-700 dark:text-gray-300 max-w-md mb-8">
-                Soy el Director Creativo de <strong>{brandName}</strong>. Puedo diseñar nuevos modelos de ropa, darte consejos de marketing, generar ideas de contenido y crear <strong>prompts hiper-específicos para Nano Banana 2</strong>. ¡Además, aprendo constantemente de ti y nuestra marca!
+                Puedo ayudarte con la dirección de arte, diseño de playeras, marketing, ideas para reels y a construir la identidad visual de la marca. <strong>¡Aprendo de nuestras conversaciones para afinar nuestro estilo!</strong>
               </p>
               <div className="grid sm:grid-cols-2 gap-2 w-full max-w-lg">
                 {SUGGESTIONS.map((s) => (
@@ -307,127 +270,73 @@ export default function Home() {
             </div>
           ) : (
             <div className="space-y-6">
-              {messages.map((msg, idx) => {
-                const prompt = msg.role === "assistant" ? extractGeneratorPrompt(msg.content) : null;
-                const imgs = generated[idx] ?? [];
-                return (
-                  <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              {messages.map((msg, idx) => (
+                <div key={idx} className={\`flex gap-3 \${msg.role === "user" ? "justify-end" : "justify-start"}\`}>
+                  {msg.role === "assistant" && (
+                    <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1 overflow-hidden border border-[var(--border)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/logo.jpg" alt="Stly" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={\`group relative max-w-[85%] rounded-2xl px-4 py-3 \${
+                      msg.role === "user"
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
+                        : "bg-[var(--card)] text-[var(--card-foreground)] border border-[var(--border)]"
+                    }\`}
+                  >
+                    {msg.media && msg.media.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {msg.media.map((m, i) =>
+                          m.kind === "video" ? (
+                            <video
+                              key={i}
+                              src={m.preview}
+                              className="w-28 h-28 object-cover rounded-lg border border-black/10"
+                              muted
+                              controls
+                            />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={i}
+                              src={m.preview}
+                              alt="referencia"
+                              className="w-24 h-24 object-cover rounded-lg border border-black/10"
+                            />
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {msg.content && msg.role === "assistant" ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-h3:text-base prose-h3:mt-4 prose-h3:mb-1.5 prose-p:mb-3 prose-p:leading-relaxed marker:text-[var(--primary)] prose-pre:bg-black/5 dark:prose-pre:bg-white/5">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      msg.content && <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    )}
+
+                    {/* Copiar respuesta completa */}
                     {msg.role === "assistant" && (
-                      <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1 overflow-hidden border border-[var(--border)]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.jpg" alt="Stly" className="w-full h-full object-cover" />
-                      </div>
+                      <button
+                        onClick={() => copyMessage(msg.content, idx)}
+                        className="absolute -bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--background)] border border-[var(--border)] rounded-md px-2 py-1 text-xs flex items-center gap-1 text-gray-500 hover:text-[var(--foreground)]"
+                      >
+                        {copiedIdx === idx ? <><Check className="w-3 h-3 text-green-500" /> Copiado</> : <><Copy className="w-3 h-3" /> Copiar</>}
+                      </button>
                     )}
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`group relative max-w-[85%] rounded-2xl px-4 py-3 ${
-                        msg.role === "user"
-                          ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
-                          : "bg-[var(--card)] text-[var(--card-foreground)] border border-[var(--border)]"
-                      }`}
-                    >
-                      {msg.media && msg.media.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {msg.media.map((m, i) =>
-                            m.kind === "video" ? (
-                              <video
-                                key={i}
-                                src={m.preview}
-                                className="w-28 h-28 object-cover rounded-lg border border-black/10"
-                                muted
-                                controls
-                              />
-                            ) : (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={i}
-                                src={m.preview}
-                                alt="referencia"
-                                className="w-24 h-24 object-cover rounded-lg border border-black/10"
-                              />
-                            )
-                          )}
-                        </div>
-                      )}
+                  </motion.div>
 
-                      {msg.content && msg.role === "assistant" ? (
-                        <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-h3:text-base prose-h3:mt-4 prose-h3:mb-1.5 prose-p:mb-3 prose-p:leading-relaxed marker:text-[var(--primary)] prose-pre:bg-black/5 dark:prose-pre:bg-white/5">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        msg.content && <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      )}
-
-                      {/* Acciones para respuestas con prompt generador */}
-                      {msg.role === "assistant" && prompt && (
-                        <div className="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap items-center gap-2">
-                          <button
-                            onClick={() => generateImage(idx, prompt)}
-                            disabled={genLoading[idx]}
-                            className="px-3 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium flex items-center gap-1.5 hover:opacity-90 transition-opacity disabled:opacity-50"
-                          >
-                            {genLoading[idx] ? (
-                              <>
-                                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                                  <Sparkles className="w-3.5 h-3.5" />
-                                </motion.div>
-                                Generando…
-                              </>
-                            ) : (
-                              <><Wand2 className="w-3.5 h-3.5" /> {imgs.length ? "Generar otra" : "Generar imagen"}</>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => copyMessage(prompt, idx)}
-                            className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-medium flex items-center gap-1.5 text-[var(--foreground)] hover:border-gray-400 transition-colors"
-                          >
-                            {copiedIdx === idx ? <><Check className="w-3.5 h-3.5 text-green-500" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar prompt</>}
-                          </button>
-                        </div>
-                      )}
-
-                      {genError[idx] && (
-                        <p className="mt-2 text-xs text-red-500">{genError[idx]}</p>
-                      )}
-
-                      {imgs.length > 0 && (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {imgs.map((src, i) => (
-                            <div key={i} className="relative group/img">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={src} alt="generada" className="w-full rounded-xl border border-[var(--border)]" />
-                              <button
-                                onClick={() => downloadImage(src, `stly-${idx}-${i + 1}.png`)}
-                                className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-[var(--background)]/90 border border-[var(--border)] rounded-md p-1.5 text-gray-600 hover:text-[var(--foreground)]"
-                                aria-label="Descargar imagen"
-                              >
-                                <Download className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Copiar respuesta completa (solo texto, sin prompt destacado) */}
-                      {msg.role === "assistant" && !prompt && (
-                        <button
-                          onClick={() => copyMessage(msg.content, idx)}
-                          className="absolute -bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--background)] border border-[var(--border)] rounded-md px-2 py-1 text-xs flex items-center gap-1 text-gray-500 hover:text-[var(--foreground)]"
-                        >
-                          {copiedIdx === idx ? <><Check className="w-3 h-3 text-green-500" /> Copiado</> : <><Copy className="w-3 h-3" /> Copiar</>}
-                        </button>
-                      )}
-                    </motion.div>
-
-                    {msg.role === "user" && (
-                      <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--border)] flex items-center justify-center mt-1">
-                        <User className="w-4 h-4 text-gray-500" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  {msg.role === "user" && (
+                    <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--border)] flex items-center justify-center mt-1">
+                      <User className="w-4 h-4 text-gray-500" />
+                    </div>
+                  )}
+                </div>
+              ))}
 
               {loading && (
                 <div className="flex gap-3 justify-start">
@@ -517,7 +426,7 @@ export default function Home() {
             </button>
           </div>
           <p className="text-[11px] text-gray-400 mt-2 text-center">
-            Enter para enviar · Shift+Enter salto de línea · Arrastra o pega imágenes y video · El prompt sale en inglés para AI Studio.
+            Enter para enviar · Shift+Enter salto de línea · Arrastra o pega imágenes y video para analizar.
           </p>
         </div>
       </div>
