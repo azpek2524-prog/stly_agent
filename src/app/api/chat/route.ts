@@ -108,10 +108,10 @@ export async function POST(req: Request) {
           const docRef = db.collection('stly_vault_memory').doc(MEMORY_DOC_ID);
           const docSnap = await docRef.get();
           let currentContent = docSnap.exists ? docSnap.data()?.content : "";
-          const updatedContent = currentContent + \`\\n- \${newMemory}\`;
+          const updatedContent = currentContent + `\n- ${newMemory}`;
           
           await docRef.set({ content: updatedContent }, { merge: true });
-          console.log(\`Memoria actualizada en Firebase: \${newMemory}\`);
+          console.log(`Memoria actualizada en Firebase: ${newMemory}`);
         } catch (e) {
           console.error("Error al actualizar la memoria en Firebase:", e);
         }
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       // Siempre guardar en local (para el entorno de desarrollo)
       try {
         const memoryPath = path.join(process.cwd(), 'BRAND_MEMORY.md');
-        await fs.appendFile(memoryPath, \`\\n- \${newMemory}\\n\`);
+        await fs.appendFile(memoryPath, `\n- ${newMemory}\n`);
       } catch (e) {
         console.error("Error al actualizar BRAND_MEMORY.md:", e);
       }

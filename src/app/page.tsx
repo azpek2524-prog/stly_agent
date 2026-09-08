@@ -86,7 +86,7 @@ export default function Home() {
 
     const tooBig = media.find((f) => f.size > MAX_FILE_MB * 1024 * 1024);
     if (tooBig) {
-      setError(\`"\${tooBig.name}" pesa demasiado. Máximo \${MAX_FILE_MB} MB por archivo.\`);
+      setError(`"${tooBig.name}" pesa demasiado. Máximo ${MAX_FILE_MB} MB por archivo.`);
       return;
     }
     setError(null);
@@ -271,7 +271,7 @@ export default function Home() {
           ) : (
             <div className="space-y-6">
               {messages.map((msg, idx) => (
-                <div key={idx} className={\`flex gap-3 \${msg.role === "user" ? "justify-end" : "justify-start"}\`}>
+                <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.role === "assistant" && (
                     <div className="w-8 h-8 shrink-0 rounded-md bg-[var(--primary)] flex items-center justify-center mt-1 overflow-hidden border border-[var(--border)]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -281,11 +281,11 @@ export default function Home() {
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={\`group relative max-w-[85%] rounded-2xl px-4 py-3 \${
+                    className={`group relative max-w-[85%] rounded-2xl px-4 py-3 ${
                       msg.role === "user"
                         ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                         : "bg-[var(--card)] text-[var(--card-foreground)] border border-[var(--border)]"
-                    }\`}
+                    }`}
                   >
                     {msg.media && msg.media.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
